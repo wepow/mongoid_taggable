@@ -22,6 +22,16 @@ module Mongoid::Taggable
 
     delegate :convert_string_tags_to_array, :aggregate_tags!, :to => 'self.class'
 
+    # De-duplicate tags, case-insensitively, but preserve case given first
+    set_callback :save, :before do
+      tags = read_attribute(tags_field)
+      tags = tags.reduce([]) do |uniques, tag|
+        uniques << tag unless uniques.map(&:downcase).include?(tag.downcase)
+        uniques
+      end
+      write_attribute(tags_field, tags)
+    end
+
     set_callback :create,  :after, :aggregate_tags!
     set_callback :destroy, :after, :aggregate_tags!
     set_callback :save,    :after, :aggregate_tags!, :if => proc { previous_changes.include?(tags_field.to_s) }
@@ -138,9 +148,9 @@ module Mongoid::Taggable
       (_tags).split(tags_separator)
     end
 
-    # Define modifier for the configured tag field name that overrides
-    # the default to transparently convert tags given as a String.
     def define_tag_field_accessors(name)
+      # Define modifier for the configured tag field name that overrides
+      # the default to transparently convert tags given as a String.
       define_method "#{name}_with_taggable=" do |values|
         case values
         when String
