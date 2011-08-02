@@ -47,35 +47,35 @@ describe Mongoid::Taggable do
     let(:model) { MyModel.new }
 
     context "from plain text" do
-      it "should set tags array from string" do
+      it "sets tags array from string" do
         model.tags = "some,new,tag"
         model.tags.should == %w[some new tag]
       end
 
-      it "should strip tags before put in array" do
+      it "strips tags before adding to array" do
         model.tags = "now ,  with, some spaces  , in places "
         model.tags.should == ["now", "with", "some spaces", "in places"]
       end
 
-      it "should not put empty tags in array" do
+      it "rejects blank tags" do
         model.tags = "repetitive,, commas, shouldn't cause,,, empty tags"
         model.tags.should == ["repetitive", "commas", "shouldn't cause", "empty tags"]
       end
     end
 
     context "from array of strings" do
-      it "should ignore blank strings in array" do
+      it "ignores blank strings in array" do
         model.tags = ["some", "", "new", "", "tag"]
         model.tags.should == %w[some new tag]
       end
 
-      it "should split any string within the array" do
+      it "splits any string within the array" do
         model.tags = ["favorite", "colors", "blue, green"]
         model.tags.should == %w[favorite colors blue green]
       end
     end
 
-    it "should de-duplicate tags case-insensitively" do
+    it "de-duplicates tags case-insensitively" do
       model.tags = "sometimes, Sometimes, I, repeat, myself"
       model.save
       model.tags.should == %w[sometimes I repeat myself]
@@ -92,7 +92,7 @@ describe Mongoid::Taggable do
   context "with customized tag field name" do
     let(:article) { Article.new }
 
-    it "should set tags array from string" do
+    it "sets tags array from string" do
       article.keywords = "some,new,tag"
       article.keywords.should == %w[some new tag]
     end
@@ -109,18 +109,18 @@ describe Mongoid::Taggable do
 
     let(:model) { MyModel.new }
 
-    it "should split with custom separator" do
+    it "splits with custom separator" do
       model.tags = "some;other;separator"
       model.tags.should == %w[some other separator]
     end
   end
 
   context "tag & count aggregation" do
-    it "should generate the aggregate collection name based on model" do
+    it "generates the aggregate collection name based on model" do
       MyModel.tags_aggregation_collection.should == "my_models_tags_aggregation"
     end
 
-    it "should be disabled by default" do
+    it "is disabled by default" do
       MyModel.create!(:tags => "sample,tags")
       MyModel.tags.should == []
     end
@@ -142,11 +142,11 @@ describe Mongoid::Taggable do
         ]
       end
 
-      it "should list all saved tags distinct and ordered" do
+      it "lists all saved tags distinct and ordered" do
         MyModel.tags.should == %w[ant bee food honey juice strip zip]
       end
 
-      it "should list all tags with their weights" do
+      it "lists all tags with their weights" do
         MyModel.tags_with_weight.should == [
           ['ant', 1],
           ['bee', 2],
@@ -158,17 +158,17 @@ describe Mongoid::Taggable do
         ]
       end
 
-      it "should update when tags are edited" do
+      it "updates when tags are edited" do
         MyModel.should_receive(:aggregate_tags!)
         models.first.update_attributes(:tags => 'changed')
       end
 
-      it "should not update if tags are unchanged" do
+      it "does not update if tags are unchanged" do
         MyModel.should_not_receive(:aggregate_tags!)
         models.first.update_attributes(:attr => "changed")
       end
 
-      it "should update if tags are removed" do
+      it "updates if tags are removed" do
         MyModel.should_receive(:aggregate_tags!)
         models.first.destroy
       end
@@ -184,19 +184,19 @@ describe Mongoid::Taggable do
       ]
     end
 
-    it "should return all tags with single tag input" do
+    it "returns all tags with single tag input" do
       MyModel.tagged_with("tag2").sort_by{|a| a.id.to_s}.should == [models.first, models.second].sort_by{|a| a.id.to_s}
     end
 
-    it "should return all tags with tags array input" do
+    it "returns all tags with tags array input" do
       MyModel.tagged_with(%w{tag2 tag1}).should == [models.first]
     end
 
-    it "should return all tags with tags string input" do
+    it "returns all tags with tags string input" do
       MyModel.tagged_with("tag2,tag1").should == [models.first]
     end
 
-    it "should be able to be part of methods chain" do
+    it "can be chained with other criteria" do
       MyModel.tagged_with("tag1").where(:attr => "value").should == [models.last]
     end
   end
@@ -216,7 +216,7 @@ describe Mongoid::Taggable do
   end
 
   context "using taggable module along with other mongoid modules" do
-    it "should list all saved tags distinct and ordered with custom tag attribute" do
+    it "lists all saved tags distinct and ordered with custom tag attribute" do
       Template.create!(:tags => 'food, ant, bee')
       Template.tags.should == %w[ant bee food]
     end
