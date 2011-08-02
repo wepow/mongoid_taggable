@@ -173,6 +173,23 @@ describe Mongoid::Taggable do
         models.first.destroy
       end
     end
+
+    context "with custom tag field name" do
+      before :all do
+        Article.tag_aggregation = true
+      end
+
+      after :all do
+        Article.tag_aggregation = false
+      end
+
+      it "uses custom field name for aggregates" do
+        Article.create!(:keywords => "some, tags")
+        Article.create!(:keywords => "more, tags")
+        Article.keywords.should == ["more", "some", "tags"]
+        Article.keywords_with_weight.should include(['tags', 2])
+      end
+    end
   end
 
   context "#self.tagged_with" do

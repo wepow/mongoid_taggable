@@ -74,19 +74,6 @@ module Mongoid::Taggable
       define_tag_field_accessors(tags_field)
     end
 
-    # get an array with all defined tags for this model, this list returns
-    # an array of distinct ordered list of tags defined in all documents
-    # of this model
-    def tags
-      db.collection(tags_aggregation_collection).find.to_a.map{ |r| r["_id"] }
-    end
-
-    # retrieve the list of tags with weight(count), this is useful for
-    # creating tag clouds
-    def tags_with_weight
-      db.collection(tags_aggregation_collection).find.to_a.map{ |r| [r["_id"], r["value"]] }
-    end
-
     # Find documents tagged with all tags passed as a parameter, given
     # as an Array or a String using the configured separator.
     #
@@ -161,6 +148,23 @@ module Mongoid::Taggable
         send("#{name}_without_taggable=", values.map(&:strip).reject(&:blank?))
       end
       alias_method_chain "#{name}=", :taggable
+
+      # Dynamically named class methods, for aggregation
+      (class << self; self; end).instance_eval do
+        # get an array with all defined tags for this model, this list returns
+        # an array of distinct ordered list of tags defined in all documents
+        # of this model
+        define_method "#{name}" do
+          db.collection(tags_aggregation_collection).find.to_a.map{ |r| r["_id"] }
+        end
+
+        # retrieve the list of tags with weight(count), this is useful for
+        # creating tag clouds
+        define_method "#{name}_with_weight" do
+          db.collection(tags_aggregation_collection).find.to_a.map{ |r| [r["_id"], r["value"]] }
+        end
+      end
     end
+
   end
 end
