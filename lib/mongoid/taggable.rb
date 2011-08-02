@@ -20,11 +20,11 @@ module Mongoid::Taggable
     class_inheritable_accessor :tags_separator, :tag_aggregation,
       :instance_writer => false
 
-    delegate :convert_string_tags_to_array, :aggregate_tags, :to => 'self.class'
+    delegate :convert_string_tags_to_array, :aggregate_tags!, :to => 'self.class'
 
-    set_callback :create,  :after, :aggregate_tags
-    set_callback :destroy, :after, :aggregate_tags
-    set_callback :save,    :after, :aggregate_tags, :if => proc { previous_changes.include?(tags_field.to_s) }
+    set_callback :create,  :after, :aggregate_tags!
+    set_callback :destroy, :after, :aggregate_tags!
+    set_callback :save,    :after, :aggregate_tags!, :if => proc { previous_changes.include?(tags_field.to_s) }
   end
 
   module ClassMethods
@@ -92,6 +92,11 @@ module Mongoid::Taggable
       criteria.all_in(tags_field => _tags)
     end
 
+    # Predicate for whether or not map/reduce aggregation is enabled
+    def aggregate_tags?
+      !!tag_aggregation
+    end
+
     # Collection name for storing results of tag count aggregation
     def tags_aggregation_collection
       @tags_aggregation_collection ||= "#{collection_name}_tags_aggregation"
@@ -99,8 +104,8 @@ module Mongoid::Taggable
 
     # Execute map/reduce operation to aggregate tag counts for document
     # class
-    def aggregate_tags
-      return unless tag_aggregation
+    def aggregate_tags!
+      return unless aggregate_tags?
 
       map = "function() {
         if (!this.#{tags_field}) {

@@ -146,17 +146,17 @@ describe Mongoid::Taggable do
       end
 
       it "should update when tags are edited" do
-        MyModel.should_receive(:aggregate_tags)
+        MyModel.should_receive(:aggregate_tags!)
         models.first.update_attributes(:tags => 'changed')
       end
 
       it "should not update if tags are unchanged" do
-        MyModel.should_not_receive(:aggregate_tags)
+        MyModel.should_not_receive(:aggregate_tags!)
         models.first.update_attributes(:attr => "changed")
       end
 
       it "should update if tags are removed" do
-        MyModel.should_receive(:aggregate_tags)
+        MyModel.should_receive(:aggregate_tags!)
         models.first.destroy
       end
     end
