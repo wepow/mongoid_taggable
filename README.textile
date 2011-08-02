@@ -98,3 +98,7 @@ bc.. class Post
   taggable :separator => ' '    # tags will be delineated by spaces
 end
 
+h3. TODO:
+
+* Should subclasses output map/reduce aggregation results to their own collections?
+* Perhaps implement operators, <<, etc. for full-on set semantics.

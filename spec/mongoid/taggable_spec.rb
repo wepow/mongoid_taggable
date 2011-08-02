@@ -230,6 +230,16 @@ describe Mongoid::Taggable do
       editorial.keywords = 'opinion politics'
       editorial.keywords.should == %w[opinion politics]
     end
+
+    # This is kind of surprising -- subclasses are stored in the same Mongo
+    # collection. Should we change the map/reduce output collection?
+    it "counts aggregates including parent" do
+      Article.create!(:keywords => 'satire, politics')
+      Editorial.create!(:keywords => 'satire politics')
+      Editorial.create!(:keywords => 'satire politics')
+      Article.keywords_with_weight.should include(['satire', 3])
+      Editorial.keywords_with_weight.should include(['satire', 3])
+    end
   end
 
   context "using taggable module along with other mongoid modules" do
