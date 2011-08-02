@@ -43,36 +43,49 @@ class Template
 end
 
 describe Mongoid::Taggable do
-  context "saving tags from plain text" do
+  context "saving tags" do
     let(:model) { MyModel.new }
 
-    it "should set tags array from string" do
-      model.tags = "some,new,tag"
-      model.tags.should == %w[some new tag]
+    context "from plain text" do
+      it "should set tags array from string" do
+        model.tags = "some,new,tag"
+        model.tags.should == %w[some new tag]
+      end
+
+      it "should strip tags before put in array" do
+        model.tags = "now ,  with, some spaces  , in places "
+        model.tags.should == ["now", "with", "some spaces", "in places"]
+      end
+
+      it "should not put empty tags in array" do
+        model.tags = "repetitive,, commas, shouldn't cause,,, empty tags"
+        model.tags.should == ["repetitive", "commas", "shouldn't cause", "empty tags"]
+      end
     end
 
-    it "should strip tags before put in array" do
-      model.tags = "now ,  with, some spaces  , in places "
-      model.tags.should == ["now", "with", "some spaces", "in places"]
+    context "from array of strings" do
+      it "should ignore blank strings in array" do
+        model.tags = ["some", "", "new", "", "tag"]
+        model.tags.should == %w[some new tag]
+      end
+
+      it "should split any string within the array" do
+        model.tags = ["favorite", "colors", "blue, green"]
+        model.tags.should == %w[favorite colors blue green]
+      end
     end
 
-    it "should not put empty tags in array" do
-      model.tags = "repetitive,, commas, shouldn't cause,,, empty tags"
-      model.tags.should == ["repetitive", "commas", "shouldn't cause", "empty tags"]
-    end
-  end
-
-  context "saving tags from array of strings" do
-    let(:model) { MyModel.new }
-
-    it "should ignore blank strings in array" do
-      model.tags = ["some", "", "new", "", "tag"]
-      model.tags.should == %w[some new tag]
+    it "should de-duplicate tags case-insensitively" do
+      model.tags = "sometimes, Sometimes, I, repeat, myself"
+      model.save
+      model.tags.should == %w[sometimes I repeat myself]
     end
 
-    it "should split any string within the array" do
-      model.tags = ["favorite", "colors", "blue, green"]
-      model.tags.should == %w[favorite colors blue green]
+    it "preserves case of first-used duplicate" do
+      model.update_attribute(:tags, ['repeat'])
+      model.tags << 'RePeat'
+      model.save
+      model.tags.should == ['repeat']
     end
   end
 
