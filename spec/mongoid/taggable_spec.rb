@@ -210,7 +210,7 @@ describe Mongoid::Taggable do
     end
 
     it "returns all tags with tags string input" do
-      MyModel.tagged_with("tag2,tag1").should == [models.first]
+      MyModel.tagged_with("tag2, tag1").should == [models.first]
     end
 
     it "can be chained with other criteria" do

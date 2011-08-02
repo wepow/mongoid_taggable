@@ -132,7 +132,7 @@ module Mongoid::Taggable
     # Helper method to convert a String to an Array based on the
     # configured tag separator.
     def convert_string_tags_to_array(_tags)
-      (_tags).split(tags_separator)
+      (_tags).split(tags_separator).map(&:strip).reject(&:blank?)
     end
 
     def define_tag_field_accessors(name)
@@ -145,7 +145,7 @@ module Mongoid::Taggable
         when Array
           values = values.inject([]) { |final, value| final.concat convert_string_tags_to_array(value) }
         end
-        send("#{name}_without_taggable=", values.map(&:strip).reject(&:blank?))
+        send("#{name}_without_taggable=", values)
       end
       alias_method_chain "#{name}=", :taggable
 
