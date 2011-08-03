@@ -87,6 +87,11 @@ describe Mongoid::Taggable do
       model.save
       model.tags.should == ['repeat']
     end
+
+    it "skips de-deduplication on save if tags are unchanged" do
+      model.should_not_receive(:dedup_tags!)
+      model.update_attribute(:attr, 'changed')
+    end
   end
 
   context "with customized tag field name" do
