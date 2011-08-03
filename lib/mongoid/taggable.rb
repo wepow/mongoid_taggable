@@ -25,7 +25,7 @@ module Mongoid::Taggable
     set_callback :create,  :after,  :aggregate_tags!
     set_callback :destroy, :after,  :aggregate_tags!
     set_callback :save,    :before, :dedup_tags!,     :if => proc { changes.include?(tags_field.to_s) }
-    set_callback :save,    :after,  :aggregate_tags!, :if => proc { previous_changes.include?(tags_field.to_s) }
+    set_callback :save,    :after,  :aggregate_tags!, :if => proc { changes.include?(tags_field.to_s) }
   end
 
   module ClassMethods
