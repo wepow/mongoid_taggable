@@ -1,38 +1,44 @@
-h1. Mongoid Taggable
+Mongoid Taggable
+================
 
 Mongoid Taggable provides some helpers to create taggable documents.
 
-h2. Installation
+Installation
+------------
 
 You can simply install from rubygems:
 
-bc. gem install mongoid_taggable
+    gem install mongoid_taggable
 
-or in Gemfile:
+or in `Gemfile`:
 
-bc. gem 'mongoid_taggable'
+    gem 'mongoid_taggable'
 
 or as a Rails Plugin:
 
-bc. script/plugin install git://github.com/wilkerlucio/mongoid_taggable.git
+    rails plugin install git://github.com/wilkerlucio/mongoid_taggable.git
 
-h2. Basic Usage
+Basic Usage
+-----------
 
-To make a document taggable you need to include Mongoid::Taggable into your document and call the @taggable@ macro with optional arguments:
+To make a document taggable you need to include `Mongoid::Taggable` into your document and call the `taggable` macro with optional arguments:
 
-bc.. class Post
+```ruby
+class Post
   include Mongoid::Document
   include Mongoid::Taggable
   
   field :title
   field :content
-
+  
   taggable
 end
+```
 
-p. Then in your form, for example:
+Then in your form, for example:
 
-bc.. <% form_for @post do |f| %>
+```rhtml
+<% form_for @post do |f| %>
   <p>
     <%= f.label :title %><br />
     <%= f.text_field :title %>
@@ -49,16 +55,19 @@ bc.. <% form_for @post do |f| %>
     <button type="submit">Send</button>
   </p>
 <% end %>
+```
 
-p. You can of course use helpers or a @FormBuilder@ extension to express this in a prettier way. In this case, the text field for tags should receive the list of tags separated by comma (below in this document you will see how to change the separator).
+You can of course use helpers or a `FormBuilder` extension to express this in a prettier way. In this case, the text field for tags should receive the list of tags separated by comma (below in this document you will see how to change the separator).
 
-p. Your document will have a custom @tags=@ setter which can accept either an ordinary Array or this separator-delineated String.
+Your document will have a custom `tags=` setter which can accept either an ordinary Array or this separator-delineated String.
 
-h2. Tag Aggregation with Counts
+Tag Aggregation with Counts
+---------------------------
 
 This lib can automatically create an aggregate collection of tags and their counts for you, updated as documents are saved. This is useful for getting a list of all tags used in documents of this collection or to create a tag cloud. This is disabled by default for sake of performance where it is unneeded -- see the following example to understand how to use it:
 
-bc.. class Post
+```ruby
+class Post
   include Mongoid::Document
   include Mongoid::Taggable
 
@@ -72,7 +81,9 @@ Post.create!(:tags => "food,ant,bee")
 Post.create!(:tags => "juice,food,bee,zip")
 Post.create!(:tags => "honey,strip,food")
 
-Post.tags # will retrieve ["ant", "bee", "food", "honey", "juice", "strip", "zip"]
+Post.tags
+# => ["ant", "bee", "food", "honey", "juice", "strip", "zip"]
+
 Post.tags_with_weight # will retrieve:
 # [
 #   ['ant', 1],
@@ -83,12 +94,15 @@ Post.tags_with_weight # will retrieve:
 #   ['strip', 1],
 #   ['zip', 1]
 # ]
+```
 
-h2. Changing default separator
+Changing default separator
+--------------------------
 
-To change the default separator you may pass a @separator@ argument to the macro:
+To change the default separator you may pass a `separator` argument to the macro:
 
-bc.. class Post
+```ruby
+class Post
   include Mongoid::Document
   include Mongoid::Taggable
 
@@ -97,8 +111,11 @@ bc.. class Post
 
   taggable :separator => ' '    # tags will be delineated by spaces
 end
+```
 
-h3. TODO:
+### TODO: ###
 
 * Should subclasses output map/reduce aggregation results to their own collections?
-* Perhaps implement operators, <<, etc. for full-on set semantics.
+* Perhaps implement operators, <<, etc. for full-on set semantics. See:
+    https://github.com/mlabs/mongoid_taggable/commit/13195805e110a7113b9f04710d9bade39440b63e
+
