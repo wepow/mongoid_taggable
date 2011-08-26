@@ -30,7 +30,8 @@ module Mongoid::Taggable
 
   module ClassMethods
     # Macro to declare a document class as taggable, specify field name
-    # for tags, and set options for tagging behavior.
+    # for tags, and set options for tagging behavior. Additional options
+    # are passed to the Mongoid field definition call.
     #
     # @example Define a taggable document.
     #
@@ -50,16 +51,12 @@ module Mongoid::Taggable
     #   map/reduce; defaults to false
     def taggable(*args)
       options = args.extract_options!
-      options.reverse_merge!(
-        :separator => ',',
-        :aggregation => false
-      )
 
       write_inheritable_attribute(:tags_field, args.blank? ? :tags : args.shift)
-      self.tags_separator  = options[:separator]
-      self.tag_aggregation = options[:aggregation]
+      self.tags_separator  = options.delete(:separator) { ',' }
+      self.tag_aggregation = options.delete(:aggregation) { false }
 
-      field tags_field, :type => Array
+      field tags_field, options.merge(:type => Array)
       index tags_field
 
       define_tag_field_accessors(tags_field)
