@@ -96,6 +96,8 @@ Post.tags_with_weight # will retrieve:
 # ]
 ```
 
+You may also trigger aggregation on-demand rather than setting the automatic option, to run it from a background task for instance, by calling `Post.aggregate_tags!`.
+
 Changing default separator
 --------------------------
 
