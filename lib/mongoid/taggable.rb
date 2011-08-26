@@ -20,12 +20,13 @@ module Mongoid::Taggable
     class_inheritable_accessor :tags_separator, :tag_aggregation,
       :instance_writer => false
 
-    delegate :convert_string_tags_to_array, :aggregate_tags!, :to => 'self.class'
+    delegate :convert_string_tags_to_array, :aggregate_tags!, :aggregate_tags?,
+      :to => 'self.class'
 
-    set_callback :create,  :after,  :aggregate_tags!, :if => proc { self.class.aggregate_tags? }
-    set_callback :destroy, :after,  :aggregate_tags!, :if => proc { self.class.aggregate_tags? }
+    set_callback :create,  :after,  :aggregate_tags!, :if => proc { aggregate_tags? }
+    set_callback :destroy, :after,  :aggregate_tags!, :if => proc { aggregate_tags? }
     set_callback :save,    :before, :dedup_tags!,     :if => proc { changes.include?(tags_field.to_s) }
-    set_callback :save,    :after,  :aggregate_tags!, :if => proc { changes.include?(tags_field.to_s) and self.class.aggregate_tags? }
+    set_callback :save,    :after,  :aggregate_tags!, :if => proc { changes.include?(tags_field.to_s) and aggregate_tags? }
   end
 
   module ClassMethods
