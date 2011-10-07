@@ -16,8 +16,7 @@ module Mongoid::Taggable
   extend ActiveSupport::Concern
 
   included do
-    class_attribute :tags_field
-    class_attribute :tags_separator, :tag_aggregation,
+    class_attribute :tags_field, :tags_separator, :tag_aggregation,
       :instance_writer => false
 
     delegate :convert_string_tags_to_array, :aggregate_tags!, :aggregate_tags?,
