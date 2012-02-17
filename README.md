@@ -110,6 +110,7 @@ class Post
   field :published, :type => Boolean
   
   taggable :aggregation_options => { :query => { :published => true } }
+end
 ```
 
 A full list of available options can be found at [the ruby driver API](http://api.mongodb.org/ruby/current/Mongo/Collection.html#map_reduce-instance_method) (consult the appropriate version).
