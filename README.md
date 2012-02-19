@@ -1,7 +1,8 @@
 Mongoid Taggable
 ================
 
-Mongoid Taggable provides some helpers to create taggable documents.
+Mongoid Taggable provides some helpers to create taggable documents. Changes on
+this fork are noted in the `CHANGELOG` file.
 
 Installation
 ------------
