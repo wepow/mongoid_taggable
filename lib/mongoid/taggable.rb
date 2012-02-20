@@ -188,6 +188,7 @@ module Mongoid::Taggable
         result = result["results"].to_a.map { |r| [r["_id"], r["value"]] }
         options[:save_as][:object].send(:"#{options[:save_as][:attribute].to_s}=",
                                         result)
+        options[:save_as][:object].save
       end
     end
 

@@ -315,6 +315,7 @@ describe Mongoid::Taggable do
         Post.tag_aggregation = true
 
         Post.first.aggregate_tags!
+        author.reload
         author.posts_with_weight.should == [
           ['leisure', 1],
           ['programming', 1],
