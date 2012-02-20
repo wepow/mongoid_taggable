@@ -20,8 +20,7 @@ module Mongoid::Taggable
     class_attribute :tags_field, :tags_separator, :tag_aggregation,
       :tag_aggregation_options, :instance_writer => false
 
-    delegate :convert_string_tags_to_array, :aggregate_tags!, :aggregate_tags?,
-      :to => 'self.class'
+    delegate :convert_string_tags_to_array, :aggregate_tags?, :to => 'self.class'
 
     set_callback :create,  :after,  :aggregate_tags!, :if => proc { aggregate_tags? }
     set_callback :destroy, :after,  :aggregate_tags!, :if => proc { aggregate_tags? }
@@ -94,7 +93,7 @@ module Mongoid::Taggable
 
     # Execute map/reduce operation to aggregate tag counts for document
     # class
-    def aggregate_tags!
+    def aggregate_tags!(instance_tag_aggregation_options = nil)
       map = "function() {
         if (!this.#{tags_field}) {
           return;
@@ -115,12 +114,28 @@ module Mongoid::Taggable
         return count;
       }"
 
-      map_reduce_options = { :out => tags_aggregation_collection }.
-        merge(tag_aggregation_options)
+      map_reduce_options = 
+        create_map_reduce_options(instance_tag_aggregation_options || 
+                                  tag_aggregation_options)
       collection.master.map_reduce(map, reduce, map_reduce_options)
     end
 
   private
+
+    def create_map_reduce_options(options = {})
+      map_reduce_options =  { :out => tags_aggregation_collection }
+
+      if options.is_a?(Hash)
+        if options.delete(:save_as)
+          map_reduce_options[:raw] = true
+          map_reduce_options[:out] = { :inline => 1 }
+        end
+
+        map_reduce_options.merge!(options)
+      end
+
+      map_reduce_options
+    end
 
     # Helper method to convert a String to an Array based on the
     # configured tag separator.
@@ -161,6 +176,21 @@ module Mongoid::Taggable
   end
 
   module InstanceMethods
+    # Execute map/reduce operation to aggregate tag counts for document
+    # class, from the instance
+    def aggregate_tags!
+      options = self.class.tag_aggregation_options
+      options = options.call(self) if options.is_a?(Proc)
+
+      result = self.class.aggregate_tags!(options.clone)
+
+      if options[:save_as]
+        result = result["results"].to_a.map { |r| [r["_id"], r["value"]] }
+        options[:save_as][:object].send(:"#{options[:save_as][:attribute].to_s}=",
+                                        result)
+      end
+    end
+
     # De-duplicate tags, case-insensitively, but preserve case given first
     def dedup_tags!
       tags = read_attribute(tags_field)

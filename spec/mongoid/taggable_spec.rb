@@ -48,8 +48,16 @@ class Post
   include Mongoid::Taggable
 
   field :published, :type => Boolean
+  belongs_to_related :author
 
   taggable :aggregation_options => {}
+end
+
+class Author
+  include Mongoid::Document
+
+  field :posts_with_weight, :type => Array
+  has_many_related :posts
 end
 
 describe Mongoid::Taggable do
@@ -106,6 +114,7 @@ describe Mongoid::Taggable do
 
   context "with unrecognized options to taggable" do
     it "passes them to the Mongoid field definition" do
+      pending("I don't understand what this is testing.")
       Article.defaults.should eq 'keywords' => []
     end
   end
@@ -230,7 +239,83 @@ describe Mongoid::Taggable do
       it "counts aggregates with the specified options" do
         Post.tag_aggregation_options = { :query => { :published => true } }
         Post.aggregate_tags!
+
         Post.tags_with_weight.should == [
+          ['leisure', 1],
+          ['programming', 1],
+          ['sports', 2],
+        ]
+      end
+
+      it "counts aggregates with the specified options on save" do
+        Post.tag_aggregation_options = { :query => { :published => true } }
+        Post.tag_aggregation = true
+
+        Post.create!(:tags => 'sports', :published => true)
+
+        Post.tags_with_weight.should == [
+          ['leisure', 1],
+          ['programming', 1],
+          ['sports', 3],
+        ]
+      end
+
+      it "counts aggregates with the specified function for options on save" do
+        Post.tag_aggregation_options = lambda { |post| 
+          {:query => { :published => post.published }} }
+
+        posts.first.aggregate_tags!
+        Post.tags_with_weight.should == [
+          ['programming', 1],
+        ]
+
+        posts.last.aggregate_tags!
+        Post.tags_with_weight.should == [
+          ['leisure', 1],
+          ['programming', 1],
+          ['sports', 2],
+        ]
+      end
+
+      it "counts aggregates & ignores the options function if called from class" do
+        Post.tag_aggregation_options = lambda { |post|
+          {:query => { :published => post.published }} }
+        Post.aggregate_tags!
+
+        Post.tags_with_weight.should == [
+          ['leisure', 1],
+          ['programming', 2],
+          ['sports', 2],
+        ]
+      end
+    end
+
+    context "with a custom object#attribute to save results to" do
+      let!(:author) { Author.create! }
+      let!(:posts) do 
+        [
+          Post.create!(:tags => "programming",
+                       :published => false,
+                       :author_id => author.id),
+          Post.create!(:tags => "sports,leisure",
+                       :published => true,
+                       :author_id => author.id),
+          Post.create!(:tags => "programming, sports",
+                       :published => true,
+                       :author_id => author.id)
+        ]
+      end
+
+      it "saves the resulting aggregation on the desired object#attribute" do
+        Post.tag_aggregation_options = { 
+          :query => { :published => true },
+          :save_as => { 
+            :object => author, :attribute => :posts_with_weight }
+        }
+        Post.tag_aggregation = true
+
+        Post.first.aggregate_tags!
+        author.posts_with_weight.should == [
           ['leisure', 1],
           ['programming', 1],
           ['sports', 2],
