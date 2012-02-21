@@ -190,6 +190,8 @@ module Mongoid::Taggable
                                         result)
         options[:save_as][:object].save
       end
+
+      true
     end
 
     # De-duplicate tags, case-insensitively, but preserve case given first
