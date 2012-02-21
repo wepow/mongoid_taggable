@@ -169,7 +169,7 @@ module Mongoid::Taggable
         # retrieve the list of tags with weight(count), this is useful for
         # creating tag clouds
         define_method "#{name}_with_weight" do
-          db.collection(tags_aggregation_collection).find.to_a.map{ |r| [r["_id"], r["value"]] }
+          db.collection(tags_aggregation_collection).find.to_a.map{ |r| [r["_id"], r["value"].to_i] }
         end
       end
     end
@@ -185,7 +185,7 @@ module Mongoid::Taggable
       result = self.class.aggregate_tags!(options.clone)
 
       if options[:save_as]
-        result = result["results"].to_a.map { |r| [r["_id"], r["value"]] }
+        result = result["results"].to_a.map { |r| [r["_id"], r["value"].to_i] }
         options[:save_as][:object].send(:"#{options[:save_as][:attribute].to_s}=",
                                         result)
         options[:save_as][:object].save
