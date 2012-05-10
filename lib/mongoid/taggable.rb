@@ -20,7 +20,8 @@ module Mongoid::Taggable
     class_attribute :tags_field, :tags_separator, :tag_aggregation,
       :tag_aggregation_options, :instance_writer => false
 
-    delegate :convert_string_tags_to_array, :aggregate_tags?, :to => 'self.class'
+    delegate :convert_string_tags_to_array, :format_aggregation_result,
+      :aggregate_tags?, :to => 'self.class'
 
     set_callback :create,  :after,  :aggregate_tags!, :if => proc { aggregate_tags? }
     set_callback :destroy, :after,  :aggregate_tags!, :if => proc { aggregate_tags? }
@@ -143,6 +144,10 @@ module Mongoid::Taggable
       (_tags).split(tags_separator).map(&:strip).reject(&:blank?)
     end
 
+    def format_aggregation_result(result)
+      result["results"].to_a.map { |r| [r["_id"], r["value"].to_i] }
+    end
+
     def define_tag_field_accessors(name)
       # Define modifier for the configured tag field name that overrides
       # the default to transparently convert tags given as a String.
@@ -185,9 +190,8 @@ module Mongoid::Taggable
       result = self.class.aggregate_tags!(options.clone)
 
       if options[:save_as]
-        result = result["results"].to_a.map { |r| [r["_id"], r["value"].to_i] }
         options[:save_as][:object].send(:"#{options[:save_as][:attribute].to_s}=",
-                                        result)
+                                        format_aggregation_result(result))
         options[:save_as][:object].save
       end
 
