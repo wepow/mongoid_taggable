@@ -118,9 +118,10 @@ describe Mongoid::Taggable do
       article.keywords.should == %w[some new tag]
     end
 
-    it "#keywords_before_type_cast" do
-      article.keywords = "some,new,tag"
-      article.keywords_before_type_cast.should eq "some, new, tag"
+    describe "#keywords_before_type_cast" do
+      it "is defined" do
+        article.should respond_to(:keywords_before_type_cast)
+      end
     end
   end
 
@@ -244,13 +245,18 @@ describe Mongoid::Taggable do
     end
   end
 
-  context "#tags_before_type_cast" do
-    subject { MyModel.new(:tags => %w[some new tag]) }
+  # Perhaps a little white lie since we actually do store an array in Mongo, but
+  # it makes form fields "just work" with String lists of tags.
+  describe "#tags_before_type_cast" do
+    let(:model) { MyModel.new(:tags => %w[some new tag]) }
+    subject { model.tags_before_type_cast }
 
-    its(:tags_before_type_cast) { should eq "some, new, tag" }
+    it "returns String representation of tags using separator" do
+      subject.should eq "some, new, tag"
+    end
   end
 
-  context "#self.tagged_with" do
+  describe ".tagged_with" do
     let!(:models) do
       [
         MyModel.create!(:tags => "tag1,tag2,tag3"),
@@ -299,9 +305,11 @@ describe Mongoid::Taggable do
       Editorial.keywords_with_weight.should include(['satire', 3])
     end
 
-    it "#keywords_before_type_cast" do
-      editorial.keywords = %w[some new tag]
-      editorial.keywords_before_type_cast.should eq "some  new  tag"
+    describe "#keywords_before_type_cast" do
+      it "uses subclass' configured separator" do
+        editorial.keywords = %w[some new tag]
+        editorial.keywords_before_type_cast.should eq "some  new  tag"
+      end
     end
   end
 
