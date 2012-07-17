@@ -1,7 +1,4 @@
-Mongoid Taggable
-================
-
-[![Build Status][]][travis-project]
+# Mongoid Taggable [![Build Status][]][travis-project]
 
 Mongoid Taggable provides some helpers to create taggable documents.
 
