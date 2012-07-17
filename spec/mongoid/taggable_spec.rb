@@ -13,44 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require File.join(File.dirname(__FILE__), %w[.. spec_helper])
-
-class MyModel
-  include Mongoid::Document
-  include Mongoid::Taggable
-
-  field :attr
-  taggable
-end
-
-class Article
-  include Mongoid::Document
-  include Mongoid::Taggable
-
-  taggable :keywords, :default => []
-end
-
-class Editorial < Article
-  self.tags_separator = ' '
-  self.tag_aggregation = true
-end
-
-class Template
-  include Mongoid::Document
-  include Mongoid::Taggable
-  include Mongoid::Timestamps
-
-  taggable :aggregation => true 
-end
-
-class Post
-  include Mongoid::Document
-  include Mongoid::Taggable
-
-  field :published, :type => Boolean
-
-  taggable :aggregation_options => {}
-end
+require 'spec_helper'
 
 describe Mongoid::Taggable do
   context "saving tags" do

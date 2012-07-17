@@ -6,6 +6,9 @@ require 'database_cleaner'
 
 require 'mongoid_taggable'
 
+SPEC_DIR = Pathname.new(__FILE__).dirname
+Dir[SPEC_DIR.join('support/**/*.rb')].each { |f| require f }
+
 RSpec.configure do |config|
   config.mock_with :rspec
 
