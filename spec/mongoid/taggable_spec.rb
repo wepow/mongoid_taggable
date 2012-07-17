@@ -68,8 +68,12 @@ describe Mongoid::Taggable do
   end
 
   context "with unrecognized options to taggable" do
+    # NOTE: `defaults` apparently changed from returning a Hash to an Array in
+    # mongoid/mongoid@1b77d9cf09aa43c4a284b, so this spec fails on versions
+    # below 2.1.8 though the *setting* of options still actually works.
     it "passes them to the Mongoid field definition" do
-      Article.defaults.should eq 'keywords' => []
+      Article.defaults.should eq ['keywords']
+      Article.fields['keywords'].options[:default].should eq []
     end
   end
 
