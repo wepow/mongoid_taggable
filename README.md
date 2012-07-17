@@ -1,6 +1,8 @@
 Mongoid Taggable
 ================
 
+[![Build Status][]][travis-project]
+
 Mongoid Taggable provides some helpers to create taggable documents. Changes on
 this fork are noted in the `CHANGELOG` file.
 
@@ -138,4 +140,8 @@ end
 * Should subclasses output map/reduce aggregation results to their own collections?
 * Perhaps implement operators, <<, etc. for full-on set semantics. See:
     https://github.com/mlabs/mongoid_taggable/commit/13195805e110a7113b9f04710d9bade39440b63e
+
+
+[Build Status]: https://secure.travis-ci.org/ches/mongoid_taggable.png?branch=integration
+[travis-project]: http://travis-ci.org/ches/mongoid_taggable
 
