@@ -7,6 +7,8 @@ on this fork are noted here, with backwards-incompatible changes emphasized.
 
 ### Features
 
+- Define `fieldname_before_type_cast` so that form fields "just work" with
+  String-formatted tag lists ([tmaier][])
 - Ability to pass map/reduce options to the Mongo driver for the aggregation
   feature ([andresf][])
 - Tag aggregation can be called on-demand when it is not enabled to run
@@ -47,11 +49,12 @@ on this fork are noted here, with backwards-incompatible changes emphasized.
 Wilker's last official gem release before this fork.
 
 
-[andresf]: https://github.com/andresf
-[JangoSteve]: https://github.com/JangoSteve
 [adkron]: https://github.com/adkron
+[andresf]: https://github.com/andresf
 [ches]: https://github.com/ches
 [cocoafish]: https://github.com/cocoafish
 [fagiani]: https://github.com/fagiani
+[JangoSteve]: https://github.com/JangoSteve
 [petRUShka]: https://github.com/petRUShka
+[tmaier]: https://github.com/tmaier
 
