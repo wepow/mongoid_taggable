@@ -3,28 +3,29 @@ Mongoid Taggable
 
 [![Build Status][]][travis-project]
 
-Mongoid Taggable provides some helpers to create taggable documents. Changes on
-this fork are noted in the `CHANGELOG` file.
+Mongoid Taggable provides some helpers to create taggable documents.
 
 Installation
 ------------
 
-You can simply install from rubygems:
+This project is a fork that has drifted quite a bit from the original
+maintainer's version, and currently has not been re-released as a gem. See
+details on the fork changes in the `CHANGELOG` file.
 
-    gem install mongoid_taggable
+Using Bundler, in your `Gemfile`:
 
-or in `Gemfile`:
-
-    gem 'mongoid_taggable'
+    gem 'mongoid_taggable', :git => 'https://github.com/ches/mongoid_taggable.git',
+                            :branch => 'integration'
 
 or as a Rails Plugin:
 
-    rails plugin install git://github.com/wilkerlucio/mongoid_taggable.git
+    rails plugin install git://github.com/ches/mongoid_taggable.git
 
 Basic Usage
 -----------
 
-To make a document taggable you need to include `Mongoid::Taggable` into your document and call the `taggable` macro with optional arguments:
+To make a document taggable you need to include `Mongoid::Taggable` into your
+document and call the `taggable` macro with optional arguments:
 
 ```ruby
 class Post
@@ -60,14 +61,20 @@ Then in your form, for example:
 <% end %>
 ```
 
-The text field should receive a list of tags separated by comma (below in this document you will see how to change the separator).
+The text field should receive a list of tags separated by comma (below in this
+document you will see how to change the separator).
 
-Your document will have a custom `tags=` setter which can accept either an ordinary Array or this separator-delineated String.
+Your document will have a custom `tags=` setter which can accept either an
+ordinary Array or this separator-delineated String.
 
 Tag Aggregation with Counts
 ---------------------------
 
-This lib can automatically create an aggregate collection of tags and their counts for you, updated as documents are saved. This is useful for getting a list of all tags used in documents of this collection or to create a tag cloud. This is disabled by default for sake of performance where it is unneeded -- see the following example to understand how to use it:
+This lib can automatically create an aggregate collection of tags and their
+counts for you, updated as documents are saved. This is useful for getting a
+list of all tags used in documents of this collection or to create a tag cloud.
+This is disabled by default for sake of performance where it is unneeded -- see
+the following example to understand how to use it:
 
 ```ruby
 class Post
@@ -99,9 +106,12 @@ Post.tags_with_weight # will retrieve:
 # ]
 ```
 
-You may also trigger aggregation on-demand rather than setting the automatic option, to run it from a background task for instance, by calling `Post.aggregate_tags!`.
+You may also trigger aggregation on-demand rather than setting the automatic
+option, to run it from a background task for instance, by calling
+`Post.aggregate_tags!`.
 
-If you need to modify the criteria used for the aggregation you may do so as an option to 'taggable':
+If you need to modify the criteria used for the aggregation you may do so as an
+option to 'taggable':
 
 ```ruby
 class Post
@@ -116,12 +126,14 @@ class Post
 end
 ```
 
-A full list of available options can be found at [the ruby driver API](http://api.mongodb.org/ruby/current/Mongo/Collection.html#map_reduce-instance_method) (consult the appropriate version).
+A full list of available options can be found at [the ruby driver
+API][mapreduce-doc] (consult the appropriate version).
 
 Changing default separator
 --------------------------
 
-To change the default separator you may pass a `separator` argument to the macro:
+To change the default separator you may pass a `separator` argument to the
+macro:
 
 ```ruby
 class Post
@@ -137,11 +149,16 @@ end
 
 ### TODO: ###
 
-* Should subclasses output map/reduce aggregation results to their own collections?
+* Should subclasses output map/reduce aggregation results to their own
+  collections?
 * Perhaps implement operators, <<, etc. for full-on set semantics. See:
     https://github.com/mlabs/mongoid_taggable/commit/13195805e110a7113b9f04710d9bade39440b63e
 
 
 [Build Status]: https://secure.travis-ci.org/ches/mongoid_taggable.png?branch=integration
 [travis-project]: http://travis-ci.org/ches/mongoid_taggable
+[mapreduce-doc]: http://api.mongodb.org/ruby/current/Mongo/Collection.html#map_reduce-instance_method
+
+
+<!-- vim: set tw=80 :-->
 
