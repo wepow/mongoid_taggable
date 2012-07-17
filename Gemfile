@@ -9,7 +9,7 @@ platforms :mri_18 do
   gem 'SystemTimer'
 end
 
-group :development do
+unless ENV['CI']
   platforms :mri_18 do
     gem 'ruby-debug'
   end
