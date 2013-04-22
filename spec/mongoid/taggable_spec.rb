@@ -13,52 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require File.join(File.dirname(__FILE__), %w[.. spec_helper])
-
-class MyModel
-  include Mongoid::Document
-  include Mongoid::Taggable
-
-  field :attr
-  taggable
-end
-
-class Article
-  include Mongoid::Document
-  include Mongoid::Taggable
-
-  taggable :keywords, :default => []
-end
-
-class Editorial < Article
-  self.tags_separator = ' '
-  self.tag_aggregation = true
-end
-
-class Template
-  include Mongoid::Document
-  include Mongoid::Taggable
-  include Mongoid::Timestamps
-
-  taggable :aggregation => true 
-end
-
-class Post
-  include Mongoid::Document
-  include Mongoid::Taggable
-
-  field :published, :type => Boolean
-  belongs_to_related :author
-
-  taggable :aggregation_options => {}
-end
-
-class Author
-  include Mongoid::Document
-
-  field :posts_with_weight, :type => Array
-  has_many_related :posts
-end
+require 'spec_helper'
 
 describe Mongoid::Taggable do
   context "saving tags" do
@@ -113,9 +68,12 @@ describe Mongoid::Taggable do
   end
 
   context "with unrecognized options to taggable" do
+    # NOTE: `defaults` apparently changed from returning a Hash to an Array in
+    # mongoid/mongoid@1b77d9cf09aa43c4a284b, so this spec fails on versions
+    # below 2.1.8 though the *setting* of options still actually works.
     it "passes them to the Mongoid field definition" do
-      pending("I don't understand what this is testing.")
-      Article.defaults.should eq 'keywords' => []
+      Article.defaults.should eq ['keywords']
+      Article.fields['keywords'].options[:default].should eq []
     end
   end
 
@@ -125,6 +83,12 @@ describe Mongoid::Taggable do
     it "sets tags array from string" do
       article.keywords = "some,new,tag"
       article.keywords.should == %w[some new tag]
+    end
+
+    describe "#keywords_before_type_cast" do
+      it "is defined" do
+        article.should respond_to(:keywords_before_type_cast)
+      end
     end
   end
 
@@ -325,7 +289,18 @@ describe Mongoid::Taggable do
     end
   end
 
-  context "#self.tagged_with" do
+  # Perhaps a little white lie since we actually do store an array in Mongo, but
+  # it makes form fields "just work" with String lists of tags.
+  describe "#tags_before_type_cast" do
+    let(:model) { MyModel.new(:tags => %w[some new tag]) }
+    subject { model.tags_before_type_cast }
+
+    it "returns String representation of tags using separator" do
+      subject.should eq "some, new, tag"
+    end
+  end
+
+  describe ".tagged_with" do
     let!(:models) do
       [
         MyModel.create!(:tags => "tag1,tag2,tag3"),
@@ -372,6 +347,13 @@ describe Mongoid::Taggable do
       Editorial.create!(:keywords => 'satire politics')
       Article.keywords_with_weight.should include(['satire', 3])
       Editorial.keywords_with_weight.should include(['satire', 3])
+    end
+
+    describe "#keywords_before_type_cast" do
+      it "uses subclass' configured separator" do
+        editorial.keywords = %w[some new tag]
+        editorial.keywords_before_type_cast.should eq "some  new  tag"
+      end
     end
   end
 

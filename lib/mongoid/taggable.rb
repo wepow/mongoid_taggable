@@ -162,6 +162,12 @@ module Mongoid::Taggable
       end
       alias_method_chain "#{name}=", :taggable
 
+      # Define value_before_type_cast method to format array in input field as comma separated list
+      # @see ActionView::Helpers::InstanceTag::value_before_type_cast
+      define_method "#{name}_before_type_cast" do
+        self.send(name).join("#{tags_separator} ") if self.send(name)
+      end
+
       # Dynamically named class methods, for aggregation
       (class << self; self; end).instance_eval do
         # get an array with all defined tags for this model, this list returns
@@ -180,32 +186,30 @@ module Mongoid::Taggable
     end
   end
 
-  module InstanceMethods
-    # Execute map/reduce operation to aggregate tag counts for document
-    # class, from the instance
-    def aggregate_tags!
-      options = self.class.tag_aggregation_options
-      options = options.call(self) if options.is_a?(Proc)
+  # Execute map/reduce operation to aggregate tag counts for document
+  # class, from the instance
+  def aggregate_tags!
+    options = self.class.tag_aggregation_options
+    options = options.call(self) if options.is_a?(Proc)
 
-      result = self.class.aggregate_tags!(options.clone)
+    result = self.class.aggregate_tags!(options.clone)
 
-      if options[:save_as]
-        options[:save_as][:object].send(:"#{options[:save_as][:attribute].to_s}=",
-                                        format_aggregation_result(result))
-        options[:save_as][:object].save
-      end
-
-      true
+    if options[:save_as]
+      options[:save_as][:object].send(:"#{options[:save_as][:attribute].to_s}=",
+                                      format_aggregation_result(result))
+      options[:save_as][:object].save
     end
 
-    # De-duplicate tags, case-insensitively, but preserve case given first
-    def dedup_tags!
-      tags = read_attribute(tags_field)
-      tags = tags.reduce([]) do |uniques, tag|
-        uniques << tag unless uniques.map(&:downcase).include?(tag.downcase)
-        uniques
-      end
-      write_attribute(tags_field, tags)
+    true
+  end
+
+  # De-duplicate tags, case-insensitively, but preserve case given first
+  def dedup_tags!
+    tags = read_attribute(tags_field)
+    tags = tags.reduce([]) do |uniques, tag|
+      uniques << tag unless uniques.map(&:downcase).include?(tag.downcase)
+      uniques
     end
+    write_attribute(tags_field, tags)
   end
 end
