@@ -62,7 +62,7 @@ module Mongoid::Taggable
       self.tag_aggregation_options = options.delete(:aggregation_options) { {} }
 
       field tags_field, options.merge(:type => Array)
-      index tags_field
+      index "#{tags_field}" => 1
 
       define_tag_field_accessors(tags_field)
     end
@@ -88,8 +88,13 @@ module Mongoid::Taggable
     end
 
     # Collection name for storing results of tag count aggregation
+    def tags_aggregation_collection_name
+      @tags_aggregation_collection_name ||= "#{collection_name}_tags_aggregation"
+    end
+
     def tags_aggregation_collection
-      @tags_aggregation_collection ||= "#{collection_name}_tags_aggregation"
+      @tags_aggregation_collection ||= Moped::Collection.
+        new(self.collection.database, tags_aggregation_collection_name)
     end
 
     # Execute map/reduce operation to aggregate tag counts for document
@@ -118,18 +123,18 @@ module Mongoid::Taggable
       map_reduce_options = 
         create_map_reduce_options(instance_tag_aggregation_options || 
                                   tag_aggregation_options)
-      collection.master.map_reduce(map, reduce, map_reduce_options)
+      unscoped.map_reduce(map, reduce).out(map_reduce_options[:out]).raw
     end
 
   private
 
     def create_map_reduce_options(options = {})
-      map_reduce_options =  { :out => tags_aggregation_collection }
+      map_reduce_options =  { :out => { replace: tags_aggregation_collection_name } }
 
       if options.is_a?(Hash)
         if options.delete(:save_as)
           map_reduce_options[:raw] = true
-          map_reduce_options[:out] = { :inline => 1 }
+          map_reduce_options[:out] = { inline: 1 }
         end
 
         map_reduce_options.merge!(options)
@@ -174,13 +179,13 @@ module Mongoid::Taggable
         # an array of distinct ordered list of tags defined in all documents
         # of this model
         define_method "#{name}" do
-          db.collection(tags_aggregation_collection).find.to_a.map{ |r| r["_id"] }
+          tags_aggregation_collection.find.to_a.map{ |r| r["_id"] }
         end
 
         # retrieve the list of tags with weight(count), this is useful for
         # creating tag clouds
         define_method "#{name}_with_weight" do
-          db.collection(tags_aggregation_collection).find.to_a.map{ |r| [r["_id"], r["value"].to_i] }
+          tags_aggregation_collection.find.to_a.map{ |r| [r["_id"], r["value"].to_i] }
         end
       end
     end
