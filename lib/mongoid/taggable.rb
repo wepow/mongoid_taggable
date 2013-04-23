@@ -123,7 +123,10 @@ module Mongoid::Taggable
       map_reduce_options = 
         create_map_reduce_options(instance_tag_aggregation_options || 
                                   tag_aggregation_options)
-      unscoped.map_reduce(map, reduce).out(map_reduce_options[:out]).raw
+      scope =
+        map_reduce_options[:query] ? where(map_reduce_options[:query]) : unscoped
+
+      scope.map_reduce(map, reduce).out(map_reduce_options[:out]).raw
     end
 
   private
@@ -133,7 +136,6 @@ module Mongoid::Taggable
 
       if options.is_a?(Hash)
         if options.delete(:save_as)
-          map_reduce_options[:raw] = true
           map_reduce_options[:out] = { inline: 1 }
         end
 
