@@ -23,7 +23,4 @@ RSpec.configure do |config|
   end
 end
 
-Mongoid.configure do |config|
-  config.allow_dynamic_fields = true
-  config.master = Mongo::Connection.new.db('mongoid_taggable_test')
-end
+Mongoid.load!("spec/mongoid.yml", :test)
