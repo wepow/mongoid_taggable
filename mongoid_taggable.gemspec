@@ -18,9 +18,8 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = '>= 1.3.6'
 
-  s.add_runtime_dependency('mongoid', ['~> 2.1'])
-  s.add_development_dependency("bson_ext", ["~> 1.3"])
-  s.add_development_dependency('database_cleaner', ['~> 0.6.0'])
+  s.add_runtime_dependency('mongoid', ['~> 3.0'])
+  s.add_development_dependency('database_cleaner', ['~> 0.8.0'])
   s.add_development_dependency("rdoc", ["~> 3.5.0"])
   s.add_development_dependency('rspec', ['~> 2.6.0'])
 
@@ -28,4 +27,3 @@ Gem::Specification.new do |s|
   s.files = Dir.glob('lib/**/*') + %w[LICENSE README.md Rakefile]
   s.require_paths = %w[lib]
 end
-
