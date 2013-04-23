@@ -39,5 +39,5 @@ class Author
   include Mongoid::Document
 
   field :posts_with_weight, :type => Array
-  has_many_related :posts
+  has_many :posts
 end
