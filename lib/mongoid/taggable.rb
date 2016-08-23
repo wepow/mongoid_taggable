@@ -129,7 +129,17 @@ module Mongoid::Taggable
       scope.map_reduce(map, reduce).out(map_reduce_options[:out]).raw
     end
 
-  private
+    # Helper method to convert a String to an Array based on the
+    # configured tag separator.
+    def convert_string_tags_to_array(_tags)
+      (_tags).split(tags_separator).map(&:strip).reject(&:blank?)
+    end
+
+    def format_aggregation_result(result)
+      result["results"].to_a.map { |r| [r["_id"], r["value"].to_i] }
+    end
+
+    private
 
     def create_map_reduce_options(options = {})
       map_reduce_options =  { :out => { replace: tags_aggregation_collection_name } }
@@ -143,16 +153,6 @@ module Mongoid::Taggable
       end
 
       map_reduce_options
-    end
-
-    # Helper method to convert a String to an Array based on the
-    # configured tag separator.
-    def convert_string_tags_to_array(_tags)
-      (_tags).split(tags_separator).map(&:strip).reject(&:blank?)
-    end
-
-    def format_aggregation_result(result)
-      result["results"].to_a.map { |r| [r["_id"], r["value"].to_i] }
     end
 
     def define_tag_field_accessors(name)

@@ -31,6 +31,7 @@ class Post
   include Mongoid::Taggable
 
   field :published, :type => Boolean
+  field :author_id
 
   taggable :aggregation_options => {}
 end
