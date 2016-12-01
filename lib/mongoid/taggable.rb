@@ -93,7 +93,7 @@ module Mongoid::Taggable
     end
 
     def tags_aggregation_collection
-      @tags_aggregation_collection ||= Moped::Collection.
+      @tags_aggregation_collection ||= Mongo::Collection.
         new(self.collection.database, tags_aggregation_collection_name)
     end
 
