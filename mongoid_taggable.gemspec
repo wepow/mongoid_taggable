@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = '>= 1.3.6'
 
-  s.add_runtime_dependency('mongoid', ['~> 5.1'])
+  s.add_runtime_dependency('mongoid', ['~> 6.1'])
   s.add_development_dependency('database_cleaner')
   s.add_development_dependency("rdoc", ["~> 3.5.0"])
   s.add_development_dependency('rspec', ['~> 2.6.0'])
